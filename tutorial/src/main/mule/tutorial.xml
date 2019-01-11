@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_LISTNER" doc:name="HTTP Listener config" doc:id="334a6904-fa70-47f1-9746-673a14d6126d" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="school" doc:name="Database Config" doc:id="8d42489a-33c8-4e58-bb9a-779637fe3999" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" database="tesco" />
+	</db:config>
+	<db:config name="tutorial" doc:name="Database Config" doc:id="5fd72d26-eacd-47c7-9837-50fc8b657ccf" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" database="tesco" />
+	</db:config>
+	<flow name="tutorialFlow" doc:id="73563ff0-1c61-4995-a7c9-2dad30eb9d3b" >
+		<http:listener doc:name="Listener" doc:id="d7385cb3-8d32-4386-899c-72fd4888bb63" config-ref="HTTP_LISTNER" path="/add"/>
+		<set-variable value="#[message.payload.NO1 as Number]" doc:name="NO1" doc:id="aa6245d0-4d87-4acb-a11c-0714e0a506a9" variableName="NO1"/>
+		<set-variable value="#[message.payload.NO2 as Number]" doc:name="NO2" doc:id="32b3d804-fd24-4a8f-b5a9-bb6f6ee0addb" variableName="NO2"/>
+		<choice doc:name="Choice" doc:id="91042eb0-1873-48b0-b79b-cc90b0363976" >
+			<when expression='#[vars.NO1&lt;=5]'>
+				<set-variable doc:name="Too Low" doc:id="05cbef8f-eea2-4d06-be60-b52672e29391" variableName="result" value='The number is too low'/>
+			</when>
+			<when expression='#[vars.NO1&lt;10]'>
+				<set-variable value="The number is too high" doc:name="Too High" doc:id="c29242c5-812a-408e-853b-e28e6326868d" variableName="result"/>
+			</when>
+			<otherwise >
+				<set-variable value="Default" doc:name="Default" doc:id="d9d3c0a2-337e-4ff1-af91-826f31c54eb8" variableName="result" />
+			</otherwise>
+		</choice>
+		<set-variable value="#[vars.NO1 + vars.NO2]" doc:name="Total" doc:id="243f9d68-5393-4450-adbf-e70e435d6921" variableName="total" />
+		<ee:transform doc:name="Transform Message" doc:id="a0dd8600-e99b-4de8-adb5-da55991a31a6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Operation" : "Add",
+	"Total": vars.total
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="tutorialFlow1" doc:id="8cfdb48f-ae54-465e-8ae9-b572a084d361" >
+		<http:listener doc:name="Listener" doc:id="dd46c844-7088-45e1-93df-89116f1599f3" config-ref="HTTP_LISTNER" path="/showname"/>
+		<http:request method="GET" doc:name="Request" doc:id="56f38c57-d724-49c2-ba74-4cadad138a99" url="http://localhost:8081/getname">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"Key" : 1,
+	"Key-1" : 2
+}]]]></http:uri-params>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"Key" : "Value"
+}]]]></http:query-params>
+		</http:request>
+		<set-variable value="#[message.payload.Name]" doc:name="Set Variable" doc:id="000e8330-c468-4bf1-be81-46665129ca2d" variableName="Name"/>
+		<set-payload doc:name="Set Payload" doc:id="6c223ff8-1310-47e5-8e8c-8eb7ee32ae5f" value="#[payload]"/>
+	</flow>
+	<flow name="Title" doc:id="d8951b49-2285-42b2-85b9-17e3a054c856" >
+		<http:listener doc:name="Listener" doc:id="13b00ec9-22a9-40c4-a574-ff1cd8079f82" config-ref="HTTP_LISTNER" path="/getTitle" />
+		<set-variable value="#[message.payload.id]" doc:name="Selection" doc:id="e6410413-c82e-45a0-8e5b-8f4d38692198" variableName="choice"/>
+		<http:request method="GET" doc:name="Request" doc:id="6039cd8e-4c5e-439c-8f5e-7e1426c10ba7" url="https://jsonplaceholder.typicode.com/posts"/>
+		<ee:transform doc:name="Transform Message" doc:id="7cf2a770-575c-4f5c-80d7-c213188ec880" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"$(vars.choice)": (message.payload map {
+
+    "$(vars.choice)": $."$(vars.choice)"
+      
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

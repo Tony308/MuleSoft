@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Marks Form</title>
+</head>
+<body>
+<h1> School Marks Form</h1>
+<form method="post" action="http://localhost:8081/add">
+    <input type="text" name="RegNo" placeholder="Registration Number"/>
+    <input type="text" name="Name" placeholder="Name"/>
+    <input type="text" name="Marks" placeholder="Marks"/>
+    <input type="submit" value="Add"/>
+
+</form>
+<br>
+<h1>
+    Get Products
+</h1>
+<form action="http://localhost:8081/get">
+    <input type="submit" />
+</form>
+
+<h1>Update School</h1>
+
+<form method="post" action="http://localhost:8081/update">
+    <input type="text" name="RegNo" placeholder="Registration Number"/>
+    <input type="text" name="Name" placeholder="Name"/>
+    <input type="text" name="Marks" placeholder="Marks"/>
+    <br /> <br />
+    <input type="submit" value="Update" />
+</form>
+
+<h2>Delete from school</h2>
+<form method="post" action="http://localhost:8081/delete">
+    <input type="text" name="RegNo" placeholder="Registration Number" />
+    <input type="submit" value="Delete" />
+</form>
+
+<h2>Food Menu</h2>
+<form action="http:localhost:/getMenu">
+    <select name="selection">
+        <option value="drinks">Drinks</option>
+        <option value="fast-food">Fast Food</option>
+        <option value="curry" >Curry</option>
+    </select>
+
+</form>
+</body>
+</html>

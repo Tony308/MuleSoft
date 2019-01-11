@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h1>Add</h1>
+<form method="POST" action="http://localhost:8081/add">
+    <input name="NO1" type="text" /> +
+    <input name="NO2" type="text"/>
+    <input type="submit" name = "submitBtn" />
+</form>`
+<h1>Get titles</h1>
+<form method="post" action="http://localhost:8081/getTitle">
+    <input type="radio" name="id" value="id" /> ID<br>
+    <input type="radio" name="id" value="title" /> Title <br>
+    <input type="radio" name="id" value="body" /> Body <br><br>
+    <input type="submit" />
+</form>
+</body>
+</html>
