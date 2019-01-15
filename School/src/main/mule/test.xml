@@ -89,10 +89,37 @@ output application/json
 	</flow>
 	<flow name="testSelect" doc:id="e6b10676-b624-4bf3-bc81-be915bb036e6" >
 		<http:listener doc:name="Listener" doc:id="8044d882-d068-4eba-ad7f-a5d242c9d0df" config-ref="HTTP_Listener_config" path="/get"/>
-		<db:select doc:name="Select" doc:id="b4499db2-4d1c-4861-b41d-c7e114e72e2d" config-ref="Database_Config1">
+		<try doc:name="Try" doc:id="eef37118-5a4e-4641-a776-917b650dabc9" >
+			<db:select doc:name="Select" doc:id="b4499db2-4d1c-4861-b41d-c7e114e72e2d" config-ref="Database_Config1">
 			<db:sql>SELECT * FROM product;</db:sql>
 		</db:select>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="21a738d2-ec17-49a1-9be0-e9f34bd95dec">
+					<set-payload value="Error." doc:name="Set Payload" doc:id="350788ab-629e-47be-9bb2-da2206d5f3ab" />
+				</on-error-continue>
+			</error-handler>
+		</try>
 		<ee:transform doc:name="Transform Message" doc:id="19004e59-9f19-4f0a-9866-c01771a8618e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Data": payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="SelectFromSelection" doc:id="a0009840-792d-4edf-bf2b-50af96a434b1" >
+		<http:listener doc:name="Listener" doc:id="801b0c01-d0ec-4e2a-bb18-1f80cf26d2b5" config-ref="HTTP_Listener_config" path="/getMenu"/>
+		<set-variable value="#[message.payload.selection as String]" doc:name="Set Variable" doc:id="4c83a1b6-4330-4eec-9f2b-286bcfed7fe1" variableName="selection" />
+		<db:select doc:name="Select" doc:id="34ac5cb9-f3f2-4652-b4b3-06b715f2667a" config-ref="Database_Config2">
+			<db:sql >SELECT * FROM school;</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"item": vars.selection
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="1e136a29-10fe-4433-84c0-d9ff489c2680" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json

@@ -1,0 +1,19 @@
+#%RAML 1.0
+title: Your second root
+version: v3
+baseUri: http://{host}:8081/second/{version}
+baseUriParameters:
+  host:
+    description: The host machine's IP address
+protocols: HTTP
+mediaType: application/json
+documentation: 
+  - title: What Am I?
+    content:
+      This API doesnt do much. It is mainly for
+      tutorial purposes.
+  - title: I am a raml
+    content:
+      You can't tell me what I am or what I will be.
+      I am a strong independent raml file, and I don't
+      need no resources or methods.

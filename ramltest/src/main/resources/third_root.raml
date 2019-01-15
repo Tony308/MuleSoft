@@ -1,0 +1,16 @@
+#%RAML 1.0
+title: Your third root
+version: v1
+baseUri: http://{host}:8081/third/{version}
+baseUriParameters:
+  host:
+    description: The host machine's IP address
+protocols: HTTP
+mediaType: application/json
+documentation: 
+  - title: What Am I?
+    content:
+      This time, I will be able to generate a Mule flow,
+      because I have a resource with a method.
+/my-resource:
+  get:

@@ -1,0 +1,33 @@
+#%RAML 1.0
+title: Your fourth root
+version: v1
+baseUri: http://{host}:8081/second/{version}
+baseUriParameters:
+  host:
+    description: The host machine's IP address
+protocols: HTTP
+mediaType: application/json # default media type
+documentation: 
+  - title: What Am I?
+    content:
+      This time, that Mule flow will actually
+      return a json object, because the default
+      media type is application/json. This can
+      be changed at the method level.
+types:
+  Invoice:
+    properties:
+      amount:
+        type: number
+        minimum: 0
+      vendorName:
+        type: string
+/my-resource:
+  get:
+    responses:
+      200:
+        body:
+          type: Invoice
+          example:
+            amount: 10
+            vendorName: Naveed
