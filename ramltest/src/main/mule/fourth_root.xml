@@ -130,8 +130,13 @@ output application/json
 output application/json
 ---
 {
-  amount: 10,
-  vendorName: "Naveed"
+  Screen: {
+    version: "LED"
+  },
+  Mouse: {
+    purpose: "Gaming",
+    wire: "Wireless"
+  }
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>

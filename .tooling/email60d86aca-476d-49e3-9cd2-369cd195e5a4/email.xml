@@ -36,59 +36,41 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 output application/java
 ---
 {
-	"Variables": "Error in the variables."
+	"Variables": payload
 }]]></ee:set-payload>
 						</ee:message>
 					</ee:transform>
 				</on-error-continue>
 			</error-handler>
 		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="39c1fdbe-115d-451e-adc7-8d470f394fff" message="#[payload]"/>
 		<try doc:name="Try" doc:id="2b68b636-4269-4a75-9f0d-8dbfdcdf64bc" >
-			<http:request method="POST" doc:name="Request" doc:id="0f160639-5d41-4f4a-ad22-fe0bd55010aa" config-ref="login" url="http://localhost:900/get">
+			<http:request method="GET" doc:name="Request" doc:id="0f160639-5d41-4f4a-ad22-fe0bd55010aa" config-ref="login" url="http://localhost:900">
 		</http:request>
-			<logger level="INFO" doc:name="Logger" doc:id="965cf440-b628-4f0a-a1e0-602229a05e55" message="#[payload]"/>
-			<ee:transform doc:name="Transform Message" doc:id="a2c21abc-a9cb-433b-9916-5c395118ea46">
+			<ee:transform doc:name="Transform Message" doc:id="9cd5dfe1-b0de-40b3-b4c5-599ac99e7f54">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	"SQL Data": payload
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-			<error-handler >
-				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="89011662-2e41-4973-838f-1bcaaeec99a1" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:CONNECTIVITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED">
-					<ee:transform doc:name="Transform Message" doc:id="6c8a9df2-e523-4b7e-af02-4f04cceaec58" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"Request component": {
-		"payload": message.payload
-	}
-	
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-				</on-error-continue>
-			</error-handler>
-		</try>
-	</flow>
-	<flow name="APIListner" doc:id="fcbb522b-9b22-4d18-83c1-7918d76699c7" >
-		<http:listener doc:name="API/Listener" doc:id="f7931d86-f834-436f-b76b-216ea2abcf60" config-ref="Login" path="/listener" outputMimeType="application/json"/>
-		<ee:transform doc:name="Transform Message" doc:id="348d25e6-0d60-4822-aa74-b5c2d6b6ab84" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/java
 ---
 {
 	"Data": payload
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="89011662-2e41-4973-838f-1bcaaeec99a1" type="ANY">
+					<ee:transform doc:name="Transform Message" doc:id="6c8a9df2-e523-4b7e-af02-4f04cceaec58" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Rquest": payload
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
 	</flow>
 	<flow name="testFlow" doc:id="44a8f7ae-6fe0-4c0b-9b1e-b5c66035562c" >
 		<http:listener doc:name="Listener" doc:id="a91a19ff-cbfe-4408-bbb8-f7cc30561e16" config-ref="Login" path="/test" outputMimeType="text/javascript"/>

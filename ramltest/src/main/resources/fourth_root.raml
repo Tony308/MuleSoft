@@ -15,19 +15,34 @@ documentation:
       media type is application/json. This can
       be changed at the method level.
 types:
-  Invoice:
+  Screen:
     properties:
-      amount:
-        type: number
-        minimum: 0
-      vendorName:
+      version:
         type: string
+  Mouse:
+    properties:
+      purpose:
+        type: string
+      wire:
+        type: string
+traits:
+  secured:
+    usage: Apply this to any method that needs to be secured
+    description: Some requests require authentication.
+    headers:
+      access_token:
+        description: Access Token
+        example: 5757gh76
+        required: true
+
 /my-resource:
   get:
     responses:
       200:
         body:
-          type: Invoice
           example:
-            amount: 10
-            vendorName: Naveed
+            Screen:
+              version: LED
+            Mouse:
+              purpose: Gaming
+              wire: Wireless
