@@ -1,0 +1,36 @@
+#%RAML 1.0
+---
+title: e-BookMobile API
+baseUri: http://api.e-bookmobile.com/{version}
+version: v1
+
+/books:
+  /{bookTitle}:
+    get:
+      queryParameters:
+        bookTitle:
+      description: Retrieve specified book.
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "Book": {
+                    "id": "MGK"
+                  }
+                }
+
+  /{author}:
+    get:
+      queryParameters:
+        author:
+      description: Retrive a list of books by specified author.
+      responses:
+        200:
+          body:
+            application/json:
+              example: | 
+                {
+                  "Data": "get books"
+                }
