@@ -23,6 +23,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			</reconnection>
 		</http:request-connection>
 	</http:request-config>
+	<http:request-config name="loginPage" doc:name="HTTP Request configuration" doc:id="368412c3-3b81-4a69-b527-dfe795a2ce43" >
+		<http:request-connection host="localhost" port="901" />
+	</http:request-config>
 	<flow name="emailFlow" doc:id="ab9de49b-c2c2-42b4-8bf4-89a0e644eeca" >
 		<http:listener doc:name="Login" doc:id="26e8c8a4-7197-4050-9a4c-30e13311b8fa" config-ref="Login" path="/login"/>
 		<try doc:name="Try" doc:id="cb0309d5-664a-427d-b0c1-91c0d46a48fd" >
@@ -45,7 +48,7 @@ output application/java
 		</try>
 		<logger level="INFO" doc:name="Logger" doc:id="39c1fdbe-115d-451e-adc7-8d470f394fff" message="#[payload]"/>
 		<try doc:name="Try" doc:id="2b68b636-4269-4a75-9f0d-8dbfdcdf64bc" >
-			<http:request method="POST" doc:name="Request" doc:id="0f160639-5d41-4f4a-ad22-fe0bd55010aa" config-ref="login" url="http://localhost:900/get">
+			<http:request method="POST" doc:name="Request" doc:id="0f160639-5d41-4f4a-ad22-fe0bd55010aa" config-ref="login" url="http://localhost:900/">
 		</http:request>
 			<logger level="INFO" doc:name="Logger" doc:id="965cf440-b628-4f0a-a1e0-602229a05e55" message="#[payload]"/>
 			<ee:transform doc:name="Transform Message" doc:id="a2c21abc-a9cb-433b-9916-5c395118ea46">
@@ -58,6 +61,7 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			<http:request method="GET" doc:name="Request" doc:id="95d50812-af43-4577-99a3-f7c61531d06a" config-ref="loginPage" url="http://localhost:901"/>
 			<error-handler >
 				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="89011662-2e41-4973-838f-1bcaaeec99a1" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:CONNECTIVITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED">
 					<ee:transform doc:name="Transform Message" doc:id="6c8a9df2-e523-4b7e-af02-4f04cceaec58" >
@@ -66,7 +70,7 @@ output application/json
 output application/json
 ---
 {
-	"Request component": {
+	"Request failed": {
 		"payload": message.payload
 	}
 	
