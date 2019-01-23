@@ -6,53 +6,21 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<http:request-config name="NodeAPI" doc:name="HTTP Request configuration" doc:id="041c42fc-e4cf-44fb-b9b0-b43781402761" >
+	<http:request-config name="login" doc:name="HTTP Request configuration" doc:id="041c42fc-e4cf-44fb-b9b0-b43781402761" >
 		<http:request-connection host="localhost" port="900" streamResponse="true">
 			<reconnection >
 				<reconnect />
 			</reconnection>
 		</http:request-connection>
 	</http:request-config>
-	<http:request-config name="create-account" doc:name="HTTP Request configuration" doc:id="41b08338-0f38-416c-9638-cc3e80caf8e3" >
+	<http:request-config name="loginPage" doc:name="HTTP Request configuration" doc:id="41b08338-0f38-416c-9638-cc3e80caf8e3" >
 		<http:request-connection host="localhost" port="901" />
 	</http:request-config>
-	<http:listener-config name="Login" doc:name="HTTP Listener config" doc:id="82dcde30-7e8e-4a1f-994f-ae15c3cb59e7" >
+	<http:listener-config name="Login" doc:name="HTTP Listener config" doc:id="e95820bd-c36a-402b-a83b-2ac8ac671c20" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
-	<flow name="inbox" doc:id="fd98943f-b644-4208-9adc-bfdc8deec417" >
-		<http:listener doc:name="Listener" doc:id="0a2eca86-ca04-43c6-a35e-54cb45488ceb" config-ref="Login" path="/inbox"/>
-		<set-variable value="#[message.payload.id]" doc:name="Set ID" doc:id="bb5dd85e-b517-41a3-abbf-5fecf64bedf9" variableName="userId"/>
-		<http:request method="GET" doc:name="Request" doc:id="83501a1d-ae25-4bb1-9a0e-aac864914b90" config-ref="NodeAPI" url="http://localhost:900/inbox"/>
-	</flow>
-	<flow name="createAccount" doc:id="8c659879-fcf2-48a3-b567-5419c3561472" >
-		<http:listener doc:name="Listener" doc:id="306ce68d-62d2-4f20-abfb-e6678885d161" config-ref="Login" path="/createAccount"/>
-		<try doc:name="Try" doc:id="2587423a-f946-42e5-a956-b8d40ff05f3b" >
-			<set-variable value="#[message.payload.username as String]" doc:name="Set Username" doc:id="a3f00f1e-039a-451a-8ea2-f0b0f9703636" variableName="username" />
-			<set-variable value="#[message.payload.password as String]" doc:name="Set Password" doc:id="03ddaaff-3d90-47da-8474-40bdc5468792" variableName="password" />
-			<error-handler >
-				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3b69cfb4-5d7d-4d8c-afc0-3be807555dd1" >
-					<ee:transform doc:name="Transform Message" doc:id="40df7056-7b85-4b37-ad8b-90b1ce38d5bc" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"Error": {
-		"Message": "Error with variables.",
-		"Payload": message.payload
-		}
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
-				</on-error-continue>
-			</error-handler>
-		</try>
-		<http:request method="POST" doc:name="createAccount REQ" doc:id="4b7bf309-0c8b-4b2e-80e9-b4be5d9ed9e8" config-ref="NodeAPI" url="http://localhost:900/createAccount">
-		</http:request>
-		<set-payload value="#[message.payload]" doc:name="Set Payload" doc:id="1565a93e-f8d3-4682-9d27-a4e64d15c58a" />
-	</flow>
-	<flow name="login" doc:id="cc259b5e-7288-48d3-abeb-da301adcb6e2" >
-		<http:listener doc:name="Listener" doc:id="13b21c58-9027-4c51-ad3b-ca35bbad1f96" path="/login" config-ref="Login"/>
+	<flow name="emailFlow" doc:id="cc259b5e-7288-48d3-abeb-da301adcb6e2" >
+		<http:listener doc:name="Listener" doc:id="13b21c58-9027-4c51-ad3b-ca35bbad1f96" path="/login"/>
 		<try doc:name="Try" doc:id="ae6d26c5-6547-4401-ba48-4ee33ac1b2b5" >
 			<set-variable value="#[message.payload.username as String]" doc:name="Username" doc:id="265c4ac7-c155-4459-ac26-cf8d5ff211a8" variableName="username" />
 			<set-variable value="#[message.payload.password as String]" doc:name="Password" doc:id="65197ea1-0a9b-4a58-9f60-434e6f7e2d01" variableName="password" />
@@ -73,7 +41,7 @@ output application/java
 		</try>
 		<logger level="INFO" doc:name="Logger" doc:id="8e58c099-c3a5-47f8-af96-f157c4112cac" message="#[payload]"/>
 		<try doc:name="Try" doc:id="3a77c497-c439-4e96-9545-285a19281686" >
-			<http:request method="POST" doc:name="login" doc:id="2b8efd84-55a3-4062-b7ac-04078d83d512" config-ref="NodeAPI" url="http://localhost:900/">
+			<http:request method="POST" doc:name="Request" doc:id="2b8efd84-55a3-4062-b7ac-04078d83d512" config-ref="login" url="http://localhost:900/">
 		</http:request>
 			<logger level="INFO" doc:name="Logger" doc:id="caeaa04e-c5a0-4b00-afe5-b5644a1a0e70" message="#[payload]"/>
 			<ee:transform doc:name="Transform Message" doc:id="4246e0b8-b365-4841-80af-b9015f7363e0">
@@ -105,8 +73,21 @@ output application/json
 			</error-handler>
 		</try>
 	</flow>
+	<flow name="APIListner" doc:id="f0490263-be80-4b92-be40-8a5caae1fbe3" >
+		<http:listener doc:name="API/Listener" doc:id="2ac64b75-e303-4006-afc2-19bf28c3e97b" path="/listener" outputMimeType="application/json"/>
+		<ee:transform doc:name="Transform Message" doc:id="b68d5a92-edab-43d4-b292-c4f894813c7e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Data": payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<flow name="testFlow" doc:id="fa3eec0d-9e6f-4571-a03a-2912db7a15b4" >
-		<http:listener doc:name="Listener" doc:id="b47a287d-0f99-4548-bbd6-2f29aca3f5f9" config-ref="Login" path="/test"/>
+		<http:listener doc:name="Listener" doc:id="e33ca1b6-8de0-4ca2-a202-0539afa12316" path="/test" outputMimeType="text/javascript"/>
 		<ee:transform doc:name="Transform Message" doc:id="49ba7a55-54c9-4c3f-ab6f-ea2924ed24af" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -114,11 +95,9 @@ output application/json
 var result = payload
 ---
 {
-	"result": payload,
-	"message": "Mule server is live."
+	
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
-
 </mule>
