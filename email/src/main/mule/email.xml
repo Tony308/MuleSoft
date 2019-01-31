@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<http:request-config name="NodeAPI" doc:name="HTTP Request configuration" doc:id="041c42fc-e4cf-44fb-b9b0-b43781402761" >
 		<http:request-connection host="localhost" port="900" streamResponse="true">
 			<reconnection >
@@ -49,7 +50,24 @@ output application/json
 		</try>
 		<http:request method="POST" doc:name="createAccount REQ" doc:id="4b7bf309-0c8b-4b2e-80e9-b4be5d9ed9e8" config-ref="NodeAPI" url="http://localhost:900/createAccount">
 		</http:request>
-		<set-payload value="#[message.payload]" doc:name="Set Payload" doc:id="1565a93e-f8d3-4682-9d27-a4e64d15c58a" />
+		<ee:transform doc:name="Transform Message" doc:id="1612998e-76bd-430b-951b-4c3eaa6a535b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+items: payload.books map ((item, index) -> {
+      category: "book",
+      price: item.price as Number,
+      id: index,
+      properties: {
+        title: item.title,
+        author: item.author,
+        year: item.year as Number
+      }
+   }
+)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 	</flow>
 	<flow name="login" doc:id="cc259b5e-7288-48d3-abeb-da301adcb6e2" >
 		<http:listener doc:name="Listener" doc:id="13b21c58-9027-4c51-ad3b-ca35bbad1f96" path="/login" config-ref="Login"/>
@@ -71,21 +89,9 @@ output application/java
 				</on-error-continue>
 			</error-handler>
 		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="8e58c099-c3a5-47f8-af96-f157c4112cac" message="#[payload]"/>
 		<try doc:name="Try" doc:id="3a77c497-c439-4e96-9545-285a19281686" >
-			<http:request method="POST" doc:name="login" doc:id="2b8efd84-55a3-4062-b7ac-04078d83d512" config-ref="NodeAPI" url="http://localhost:900/">
+			<http:request method="POST" doc:name="login" doc:id="2b8efd84-55a3-4062-b7ac-04078d83d512" config-ref="NodeAPI" url="http://localhost:900/login">
 		</http:request>
-			<logger level="INFO" doc:name="Logger" doc:id="caeaa04e-c5a0-4b00-afe5-b5644a1a0e70" message="#[payload]"/>
-			<ee:transform doc:name="Transform Message" doc:id="4246e0b8-b365-4841-80af-b9015f7363e0">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	"SQL Data": payload
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
 			<error-handler >
 				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0de76aa3-f631-4fe0-812c-ae9b111ebda5" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:CONNECTIVITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED">
 					<ee:transform doc:name="Transform Message" doc:id="3d21e67c-8751-4fba-9b67-7a7ead690c00" >
@@ -104,7 +110,8 @@ output application/json
 				</on-error-continue>
 			</error-handler>
 		</try>
-	</flow>
+	
+</flow>
 	<flow name="testFlow" doc:id="fa3eec0d-9e6f-4571-a03a-2912db7a15b4" >
 		<http:listener doc:name="Listener" doc:id="b47a287d-0f99-4548-bbd6-2f29aca3f5f9" config-ref="Login" path="/test"/>
 		<ee:transform doc:name="Transform Message" doc:id="49ba7a55-54c9-4c3f-ab6f-ea2924ed24af" >
