@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:cors="http://www.mulesoft.org/schema/mule/cors" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/cors http://www.mulesoft.org/schema/mule/cors/current/mule-cors.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+	    <http:listener-config name="muleAPI" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="NodeAPI" host="localhost" port="900" doc:name="HTTP Request Configuration"/>
+
+ <cors:config name="Cors_Configuration" doc:name="Cors Configuration">
+        <cors:origins>
+            <cors:origin url="*" accessControlMaxAge="180">
+                <cors:methods>
+                    <cors:method>GET</cors:method>
+                    <cors:method>POST</cors:method>
+                    <cors:method>PUT</cors:method>
+                    <cors:method>DELETE</cors:method>
+                    <cors:method>OPTIONS</cors:method>
+                </cors:methods>
+                <cors:headers>
+                    <cors:header>X-Allow-Origin</cors:header>
+                </cors:headers>
+            </cors:origin>
+            <cors:origin url="http://localhost1234">
+                <cors:methods>
+                    <cors:method>GET</cors:method>
+                    <cors:method>POST</cors:method>
+                    <cors:method>PUT</cors:method>
+                    <cors:method>DELETE</cors:method>
+                    <cors:method>OPTIONS</cors:method>
+                </cors:methods>
+                <cors:headers>
+                    <cors:header>Access-Control-Allow-Origin</cors:header>
+                    <cors:header>X-Allow-Origin</cors:header>
+                    
+                </cors:headers>
+            </cors:origin>
+        </cors:origins>
+ </cors:config>
+    <global-property name="Access-Control-Allow-Origin" value="*" doc:name="Global Property"/>
+    <http:request-builder name="JsonHeader" doc:name="Request Builder">
+        <http:headers expression="&quot;Content-Type&quot;: &quot;application/json&quot;"/>
+    </http:request-builder>
+    <catch-exception-strategy name="globalCatch_Exception_Strategy">
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	Error: {
+		Message: "Error occurred.",
+		Payload: payload
+	}
+}]]></dw:set-payload>
+        </dw:transform-message>
+    </catch-exception-strategy>
+
+</mule>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sockets="http://www.mulesoft.org/schema/mule/sockets" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/sockets http://www.mulesoft.org/schema/mule/sockets/current/mule-sockets.xsd">
+	<flow name="createAccountAPI" doc:id="12cdab66-30e0-49f0-a159-acf56f43e458" >
+		<http:request method="POST" doc:name="Validate existing username" doc:id="17707678-97ef-4eee-b01b-4cda58219e06" config-ref="NodeAPI" outputMimeType="application/json" path="/existing"/>
+		<choice doc:name="Choice" doc:id="4791208f-9eb7-4197-a080-6316bb5469c9">
+			<when expression="#[payload.Exists == [0]]">
+				<set-payload value='#["username=" ++ vars.username ++ "&amp;password=" ++ vars.password]' doc:name="Set username + password" doc:id="c5df1955-a9e5-4838-a5f4-2e362356f2f6" />
+				<http:request method="POST" doc:name="createAccount REQ" doc:id="4b7bf309-0c8b-4b2e-80e9-b4be5d9ed9e8" config-ref="NodeAPI" outputMimeType="application/json" path="/createAccount">
+		</http:request>
+				<choice doc:name="Choice" doc:id="81863725-e784-424f-8b78-11f320c3d789" >
+					<when expression="#[message.payload.affectedRows == 1]">
+						<ee:transform doc:name="Transform Message" doc:id="b83fb143-0cfb-43e6-9e86-58fb8493f499" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message": "Account created."	
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Transform Message" doc:id="9b000850-e9e9-4231-add1-3428e94721aa" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<set-payload value="#[payload]" doc:name="Set Payload" doc:id="6722e399-16f6-4731-81e4-56247d3f3bb8" mimeType="application/json"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="loginAPI" doc:id="805e66f8-eaa1-4d9c-86ef-b1f1b9d558bb" >
+		<http:request method="POST" doc:name="Login" doc:id="2b8efd84-55a3-4062-b7ac-04078d83d512" config-ref="NodeAPI" outputMimeType="application/json" path="/login">
+		</http:request>
+		<try doc:name="Try" doc:id="2020b6e2-29fa-4965-a4e3-57ea013232e7">
+			<choice doc:name="Choice" doc:id="47a9a6c3-59ce-4887-8f74-ce7363c72ad5">
+			<when expression="#[payload.Exists == [1]]">
+				<set-payload value='#["recipient=" ++ vars.username]' doc:name="Set Payload" doc:id="abf4130c-faeb-49ba-a5e0-a6d26e84fd53" />
+				<http:request method="POST" doc:name="Get Emails" doc:id="eaa3159e-b526-4b08-b76f-760b545509bd" config-ref="NodeAPI" outputMimeType="application/json" path="/inbox"/>
+			</when>
+				<otherwise>
+					<set-payload value="You need to create an account" doc:name="Set Payload" doc:id="b4219e81-c912-45a3-bc79-fbc8ff6f338c" mimeType="application/json"/>
+			</otherwise>
+		</choice>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b13165ce-7312-4d85-a094-9471dfdc4f92">
+					<ee:transform doc:name="Transform Message" doc:id="0a9bfdbf-d57c-4b36-8c28-1b91c0ae15d7">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</flow>
+	<flow name="inboxAPI" doc:id="af099b66-1061-419a-8daa-2ae0cd2bb7ef" >
+		<http:request method="POST" doc:name="Get inbox" doc:id="83501a1d-ae25-4bb1-9a0e-aac864914b90" config-ref="NodeAPI" outputMimeType="application/json" path="/inbox">
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="6a8d7e7c-ff71-4183-b8c5-e6470132f397">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow doc:id="fd98943f-b644-4208-9adc-bfdc8deec417" name="inboxFlow">
+		<set-variable value="#[message.payload.recipient as String]" doc:name="Set username" doc:id="bb5dd85e-b517-41a3-abbf-5fecf64bedf9" variableName="recipient"/>
+		<set-payload value='#["recipient=" ++ vars.recipient]' doc:name="Set Payload" doc:id="a9aa6455-e6e7-4b22-92ea-850ec75e68c0" />
+		<flow-ref doc:name="Flow Reference" doc:id="f225487c-8691-4438-9be8-91c3809f3435" name="inboxAPI" />
+	</flow>
+	<flow name="emailFlow" doc:id="1dbaee01-3f23-41bc-8806-e1cbb1c804d6" >
+		<http:listener doc:name="Listener" doc:id="d9798158-fb29-4d96-acff-5920daafa40e" config-ref="muleAPI" path="/*" outputMimeType='application/json; access-control-allow-origin="http://localhost:1234/"'>
+			<reconnect />
+			<http:response statusCode="200" >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Access-Control-Allow-Origins" : "*",
+	"Content-Type" : "application/json",
+	"Access-Control-Allow-Origin" : "http://localhost:1234/"
+}]]]></http:headers>
+			</http:response>
+			<http:error-response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json"
+}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		
+		
+		<choice doc:name="Choice" doc:id="e2040a2d-fb1d-4d6a-a12d-74ba35cb62de" >
+			<when expression="#[attributes.requestPath == '/login']">
+				<flow-ref doc:name="loginFlow" doc:id="6cb8cd5d-8b08-47f0-af2b-047fedcd5910" name="loginFlow"/>
+			</when>
+			<when expression="#[attributes.requestPath =='/createAccount']">
+				<flow-ref doc:name="createAccountFlow" doc:id="4847abb5-f0a4-4bd1-b3ca-8cf58cbdcd4b" name="createAccountFlow"/>
+			</when>
+			<when expression="#[attributes.requestPath == '/inbox']">
+				<flow-ref doc:name="inboxFlow" doc:id="9017e32c-5792-4514-aa41-8e8254d22277" name="inboxFlow"/>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="testFlow" doc:id="b9e5d6cd-18c9-4dec-8c71-dc975a3e097c" name="testFlow"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="createAccountFlow" doc:id="8c659879-fcf2-48a3-b567-5419c3561472" >
+		<try doc:name="Try" doc:id="2587423a-f946-42e5-a956-b8d40ff05f3b" >
+			<validation:is-not-null doc:name="username not null" doc:id="7fdf8b94-50ad-4ea7-8078-de6a99e8b423" value="#[message.payload.username]" message="Username is empty" />
+			<validation:is-not-null doc:name="password not null" doc:id="e5feb89a-1255-4c26-89de-fd35556245eb" value="#[message.payload.password]" />
+			<set-variable value="#[message.payload.username as String]" doc:name="Set Username" doc:id="a3f00f1e-039a-451a-8ea2-f0b0f9703636" variableName="username" />
+			<set-variable value="#[message.payload.password as String]" doc:name="Set Password" doc:id="03ddaaff-3d90-47da-8474-40bdc5468792" variableName="password" />
+		</try>
+		<set-payload doc:name="Set username &amp; password" doc:id="83212211-7ea3-44c0-9206-f53492753f20" value='#["username=" ++ vars.username ++ "&amp;password=" ++ vars.password]'/>
+		<flow-ref doc:name="Flow Reference" doc:id="8dc91074-3555-4deb-8774-1d3f404c313b" name="createAccountAPI" />
+	</flow>
+	<flow name="loginFlow" doc:id="cc259b5e-7288-48d3-abeb-da301adcb6e2" >
+		<try doc:name="Try" doc:id="ae6d26c5-6547-4401-ba48-4ee33ac1b2b5" >
+			<validation:is-not-null doc:name="username not null" doc:id="56698b4a-0171-4fa6-b013-bafdd7889901" value="#[message.payload.username]" message="Username is empty" />
+			<validation:is-not-null doc:name="password not null" doc:id="3d5ca09f-2b7e-47e8-ad80-c2fa0241452c" value="#[message.payload.password]" />
+			<set-variable value="#[message.payload.username as String]" doc:name="Username" doc:id="265c4ac7-c155-4459-ac26-cf8d5ff211a8" variableName="username" />
+			<set-variable value="#[message.payload.password as String]" doc:name="Password" doc:id="65197ea1-0a9b-4a58-9f60-434e6f7e2d01" variableName="password" />
+		
+</try>
+		<set-payload value='#["username=" ++ vars.username ++ "&amp;password=" ++ vars.password]' doc:name="Set Payload" doc:id="80288d20-169a-4f98-84c6-b54c57700f3a" />
+		<flow-ref doc:name="Call Login API" doc:id="0c213eda-e44e-4a05-a542-c54ee899e974" name="loginAPI" />
+	
+</flow>
+	<flow name="testFlow" doc:id="fa3eec0d-9e6f-4571-a03a-2912db7a15b4" >
+		<http:listener doc:name="Listener" doc:id="87da8767-45a9-42f8-b5ce-af3cd1a8d049" config-ref="muleAPI" path="/test" outputMimeType="application/json">
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="49ba7a55-54c9-4c3f-ab6f-ea2924ed24af" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Mule server is live.",
+	"Payload": payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+
+</mule>
