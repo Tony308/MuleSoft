@@ -1,0 +1,9 @@
+{
+  "id":1,
+  "recipient":"test",
+  "origin":"test4",
+  "subject":"SQL Procedure",
+  "content":"This body text is added using SQL procedure",
+  "STATUS":0,
+  "DELETED":0
+}
