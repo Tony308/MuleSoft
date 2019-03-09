@@ -25,7 +25,13 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-				</configuration>
+				<sharedLibraries>
+                        <sharedLibrary>
+                            <groupId>com.mycompany</groupId>
+                            <artifactId>mysql-connector-java-8.0.13</artifactId>
+                        </sharedLibrary>
+                    </sharedLibraries>
+                </configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -59,6 +65,17 @@
             <groupId>org.mule.connectors</groupId>
             <artifactId>mule-email-connector</artifactId>
             <version>1.0.3</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    	<dependency>
+            <groupId>com.mycompany</groupId>
+            <artifactId>mysql-connector-java-8.0.13</artifactId>
+            <version>0.1</version>
+        </dependency>
+    	<dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-vm-connector</artifactId>
+            <version>2.0.0</version>
             <classifier>mule-plugin</classifier>
         </dependency>
     </dependencies>

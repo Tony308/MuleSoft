@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
+<mule xmlns:cluster="http://www.mulesoft.org/schema/mule/ee/cluster"
+	xmlns:cors="http://www.mulesoft.org/schema/mule/cors"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/cors http://www.mulesoft.org/schema/mule/cors/current/mule-cors.xsd 
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 	<http:listener-config name="muleAPI" doc:name="HTTP Listener config" doc:id="907ab178-13b9-46f4-b47d-4baa8886f898" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
@@ -18,6 +20,8 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	<http:request-config name="FrontendPages" doc:name="HTTP Request configuration" doc:id="97e817ca-baf6-47d1-b69b-46f1cde8568b" >
 		<http:request-connection host="localhost" port="1234" />
 	</http:request-config>
+	
+	<global-property doc:name="Global Property" doc:id="70b72ce7-8366-4d45-bbf2-687a8ff65cd1" name="Access-Control-Allow-Origin" value="http://localhost:1234/" />
 
 
 
