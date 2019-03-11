@@ -92,6 +92,7 @@
 			<classifier>mule-plugin</classifier>
 			<scope>test</scope>
 		</dependency>
+
     </dependencies>
 
 	<repositories>
