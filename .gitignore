@@ -42,6 +42,14 @@ local.properties
 # PDT-specific
 .buildpath
 
+# --------------- #
+# Studio-specific #
+# --------------- #
+.studio/
+flows/
+target/
+src/main/api/.repository/ 
+
 # ---------------------------------------------------------------------------- #
 #       Mulesoft Studio                                                        #
 # ---------------------------------------------------------------------------- #
