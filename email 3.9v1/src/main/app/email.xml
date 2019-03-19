@@ -32,9 +32,33 @@ payload.password as :string
         <set-payload value="username=#[flowVars.username]" mimeType="application/json" doc:name="Set payload"/>
         <flow-ref name="create-account-API" doc:name="create-account-API"/>
     </flow>
+    <flow name="getEmailFlow">
+        <http:listener config-ref="muleAPI" path="/inbox/{id}" allowedMethods="GET" doc:name="HTTP"/>
+        <set-variable variableName="id" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Variable"/>
+        <http:request config-ref="NodeAPI" path="/inbox/{id}" method="GET" doc:name="HTTP">
+            <http:request-builder>
+                <http:uri-param paramName="id" value="#[flowVars.id]"/>
+            </http:request-builder>
+        </http:request>
+        <dw:transform-message doc:name="Transform Message" metadata:id="27a813f1-87e9-433c-b2de-3e9af00efbb8">
+            <dw:input-payload mimeType="application/json"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map ((item) -> {
+	ID: item.id,
+	To: item.recipient,
+	From: item.origin,
+	Subject: item.subject,
+	Message: item.content,
+	STATUS: item.STATUS,
+	DELETED: item.DELETED
+})]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
     <flow name="create-account-API">
         <http:request config-ref="NodeAPI" path="/existing" method="POST" doc:name="Validate existing username"/>
-        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+
         <dw:transform-message doc:name="Transform Message" metadata:id="248b2ade-0d78-4a61-8c7e-fd9a937b78bf">
             <dw:input-payload doc:sample="examples\existsExample.json" mimeType="application/json"/>
             <dw:set-payload><![CDATA[%dw 1.0
@@ -51,7 +75,7 @@ payload[0].Exists]]></dw:set-variable>
             <when expression="#[flowVars.exists == 0]">
                 <set-payload value="username=#[flowVars.username]&amp;password=#[flowVars.password]" doc:name="Set username + password"/>
                 <http:request config-ref="NodeAPI" path="/createAccount" method="POST" doc:name="Create-account request"/>
-                <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+
                 <dw:transform-message doc:name="Transform Message" metadata:id="1fa4af10-6f9a-4d67-995b-452fc65f16a9">
                     <dw:input-payload mimeType="application/json"/>
                                     <dw:set-payload><![CDATA[%dw 1.0
@@ -90,20 +114,19 @@ payload.affectedRows]]></dw:set-variable>
                 </choice>
             </when>
             <otherwise>
-                <set-payload value="User exists.
-Row count: #[payload]" mimeType="application/json" doc:name="Set Payload"/>
+                <set-payload value="Username already exists" mimeType="application/json" doc:name="Set Payload"/>
             </otherwise>
         </choice>
     </flow>
 
 	<flow name="loginAPI"  >
-        <logger message="Payload before HTTP: #[payload]" level="INFO" doc:name="Logger"/>
+
         <http:request config-ref="NodeAPI" path="/login" method="POST" doc:name="Log In" metadata:id="1d860d2b-ea14-46e7-92d8-e87578dbb4b1">
             <http:request-builder>
                 <http:header headerName="Content-Type" value="application/json"/>
             </http:request-builder>
         </http:request>
-        <logger message="After HTTP: #[payload]" level="INFO" doc:name="Logger"/>
+
         <dw:transform-message doc:name="Transform Message" metadata:id="248b2ade-0d78-4a61-8c7e-fd9a937b78bf">
             <dw:input-payload doc:sample="examples\existsExample.json" mimeType="application/json"/>
             <dw:set-payload><![CDATA[%dw 1.0
@@ -117,16 +140,16 @@ payload[0].Exists as :number]]></dw:set-payload>
 payload[0].Exists]]></dw:set-variable>
         </dw:transform-message>
 
-        <logger message="After transform; payload #[payload] Variable.Exists: #[flowVars.exists]" level="INFO" doc:name="Logger"/>
         <choice doc:name="Choice">
             <when expression="#[payload.Exists==1]">
+
 
                 <flow-ref name="inboxFlow" doc:name="inboxFlow"/>
 
             </when>
             <otherwise>
                 <set-payload value="You need to create an account" doc:name="Set Payload"/>
-                <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+
             </otherwise>
         </choice>
 	</flow>
@@ -141,15 +164,16 @@ payload[0].Exists]]></dw:set-variable>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/json
 ---
-{
-	id: payload.id,
-	recipient: payload.recipient,
-	origin: payload.origin,
-	subject: payload.subject,
-	content: payload.content,
-	STATUS: payload.STATUS,
-	DELETED: payload.DELETED
-}]]></dw:set-payload>
+payload map ((item, index) -> {
+	"ID": item.id,
+	"To": item.recipient,
+	"From": item.origin,
+	"Subject": item.subject,
+	"Message": item.content,
+	"STATUS": 0,
+	"DELETED": 0
+}	
+)]]></dw:set-payload>
         </dw:transform-message>
 	</flow>
 	<flow  name="inboxFlow">
@@ -169,8 +193,12 @@ payload[0].Exists]]></dw:set-variable>
 				<flow-ref doc:name="createAccountFlow"  name="createAccountFlow"/>
 			</when>
 			<when expression="#[message.inboundProperties.'http.request.path' == '/inbox']">
-				<flow-ref doc:name="inboxFlow"  name="inboxFlow"/>
+                <flow-ref name="inboxFlow" doc:name="inboxFlow"/>
+
 			</when>
+            <when expression="">
+                <flow-ref name="getEmailFlow" doc:name="getEmailFlow"/>
+            </when>
 			<otherwise >
 				<flow-ref doc:name="testFlow"  name="testFlow"/>
 			</otherwise>

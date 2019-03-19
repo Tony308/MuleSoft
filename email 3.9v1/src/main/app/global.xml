@@ -9,7 +9,6 @@
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/cors http://www.mulesoft.org/schema/mule/cors/current/mule-cors.xsd
-
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd">
@@ -29,9 +28,10 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 </cors:methods>
                 <cors:headers>
                     <cors:header>X-Allow-Origin</cors:header>
+                    <cors:header>Access-Control-Allow-Origin</cors:header>
                 </cors:headers>
             </cors:origin>
-            <cors:origin url="http://localhost1234">
+            <cors:origin url="http://localhost:1234" accessControlMaxAge="180">
                 <cors:methods>
                     <cors:method>GET</cors:method>
                     <cors:method>POST</cors:method>
@@ -42,13 +42,14 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
                 <cors:headers>
                     <cors:header>Access-Control-Allow-Origin</cors:header>
                     <cors:header>X-Allow-Origin</cors:header>
-                    
                 </cors:headers>
             </cors:origin>
         </cors:origins>
+
  </cors:config>
     <context:property-placeholder location="email-${env}.properties"/>
     <db:mysql-config name="MySQL_Configuration" host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" doc:name="MySQL Configuration"/>
+    <http:request-config name="FrontAPI" host="localhost" port="1234" doc:name="HTTP Request Configuration"/>
 
     <catch-exception-strategy name="globalCatch_Exception_Strategy">
         <dw:transform-message doc:name="Transform Message">

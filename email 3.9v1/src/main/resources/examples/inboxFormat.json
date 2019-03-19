@@ -1,0 +1,9 @@
+{
+	"ID":1,
+	"To":"test",
+	"From":"test4",
+	"Subject":"SQL Procedure",
+	"Message":"This body text is added using SQL procedure",
+	"STATUS":0,
+	"DELETED":0
+}
