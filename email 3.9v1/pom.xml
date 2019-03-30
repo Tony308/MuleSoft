@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.mycompany</groupId>
+	<groupId>com.infosys</groupId>
 	<artifactId>emails</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>mule-application</packaging>
@@ -15,7 +15,9 @@
 
 		<app.runtime>4.1.4</app.runtime>
 		<mule.maven.plugin.version>3.1.6</mule.maven.plugin.version>
-	</properties>
+	<munit.version>1.3.9</munit.version>
+    <mule.munit.support.version>3.9.1</mule.munit.support.version>
+    </properties>
 	
 	<build>
 		<plugins>
@@ -33,8 +35,38 @@
                     </sharedLibraries>
                 </configuration>
 			</plugin>
-		</plugins>
-	</build>
+		<plugin>
+                <groupId>com.mulesoft.munit.tools</groupId>
+                <artifactId>munit-maven-plugin</artifactId>
+                <version>${munit.version}</version>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <coverage>
+                        <runCoverage>true</runCoverage>
+                        <formats>
+                            <format>html</format>
+                        </formats>
+                    </coverage>
+                </configuration>
+            </plugin>
+        </plugins>
+	<testResources>
+            <testResource>
+                <directory>src/test/munit</directory>
+            </testResource>
+        <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+    </build>
 
 	<dependencies>
         <dependency>
@@ -78,21 +110,20 @@
             <version>2.0.0</version>
             <classifier>mule-plugin</classifier>
         </dependency>
-        <dependency>
-			<groupId>com.mulesoft.munit</groupId>
-			<artifactId>munit-runner</artifactId>
-			<version>2.1.0</version>
-			<classifier>mule-plugin</classifier>
-			<scope>test</scope>
-		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.mulesoft.munit/munit-runner -->
 		<dependency>
-			<groupId>com.mulesoft.munit</groupId>
-			<artifactId>munit-tools</artifactId>
-			<version>2.1.0</version>
-			<classifier>mule-plugin</classifier>
-			<scope>test</scope>
+		    <groupId>com.mulesoft.munit</groupId>
+		    <artifactId>munit-runner</artifactId>
+		    <version>2.1.4</version>
+		    <scope>test</scope>
 		</dependency>
 
+    <dependency>
+            <groupId>com.mulesoft.munit</groupId>
+            <artifactId>mule-munit-support</artifactId>
+            <version>${mule.munit.support.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 	<repositories>

@@ -32,30 +32,7 @@ payload.password as :string
         <set-payload value="username=#[flowVars.username]" mimeType="application/json" doc:name="Set payload"/>
         <flow-ref name="create-account-API" doc:name="create-account-API"/>
     </flow>
-    <flow name="getEmailFlow">
-        <http:listener config-ref="muleAPI" path="/inbox/{id}" allowedMethods="GET" doc:name="HTTP"/>
-        <set-variable variableName="id" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Variable"/>
-        <http:request config-ref="NodeAPI" path="/inbox/{id}" method="GET" doc:name="HTTP">
-            <http:request-builder>
-                <http:uri-param paramName="id" value="#[flowVars.id]"/>
-            </http:request-builder>
-        </http:request>
-        <dw:transform-message doc:name="Transform Message" metadata:id="27a813f1-87e9-433c-b2de-3e9af00efbb8">
-            <dw:input-payload mimeType="application/json"/>
-            <dw:set-payload><![CDATA[%dw 1.0
-%output application/json
----
-payload map ((item) -> {
-	ID: item.id,
-	To: item.recipient,
-	From: item.origin,
-	Subject: item.subject,
-	Message: item.content,
-	STATUS: item.STATUS,
-	DELETED: item.DELETED
-})]]></dw:set-payload>
-        </dw:transform-message>
-    </flow>
+    
     <flow name="create-account-API">
         <http:request config-ref="NodeAPI" path="/existing" method="POST" doc:name="Validate existing username"/>
 
@@ -180,9 +157,11 @@ payload map ((item, index) -> {
         <set-payload value="recipient=#[flowVars.username]" doc:name="Set Payload"/>
 		<flow-ref doc:name="inboxAPI"  name="inboxAPI" />
 	</flow>
-	<flow name="emailFlow"  >
+	<flow name="EmailProjectFlow"  >
         <http:listener config-ref="muleAPI" path="/*" allowedMethods="POST,GET,OPTIONS,DELETE,PUT" doc:name="LISTENER" metadata:id="efcc7cc2-ee6f-45c1-9314-ccb09af7b58c"/>
         <cors:validate config-ref="Cors_Configuration" publicResource="false" acceptsCredentials="true" doc:name="CORS Validate"/>
+        <logger message="#[regex(&quot;/*&quot;,message.inboundProperties.'http.request.path')]" level="INFO" doc:name="Logger"/>
+        <logger message="#[wildcard(&quot;/inbox*&quot;, message.inboundProperties.'http.request.path')]" level="INFO" doc:name="Logger"/>
 		
 		
 		<choice doc:name="Choice"  >
@@ -192,13 +171,11 @@ payload map ((item, index) -> {
 			<when expression="#[message.inboundProperties.'http.request.path' =='/createAccount']">
 				<flow-ref doc:name="createAccountFlow"  name="createAccountFlow"/>
 			</when>
-			<when expression="#[message.inboundProperties.'http.request.path' == '/inbox']">
-                <flow-ref name="inboxFlow" doc:name="inboxFlow"/>
+			<when expression="#[wildcard(&quot;/inbox*&quot;, message.inboundProperties.'http.request.path')]">
+                <flow-ref name="EmailsFlow" doc:name="Emails"/>
 
 			</when>
-            <when expression="">
-                <flow-ref name="getEmailFlow" doc:name="getEmailFlow"/>
-            </when>
+
 			<otherwise >
 				<flow-ref doc:name="testFlow"  name="testFlow"/>
 			</otherwise>
@@ -222,7 +199,79 @@ payload.password as :string
 		<flow-ref doc:name="loginAPI"  name="loginAPI" />
 	
 </flow>
-	<flow name="testFlow"  >
+
+<flow name="EmailsFlow">
+        <http:listener config-ref="muleAPI" path="*/{id}" allowedMethods="GET,PUT" doc:name="HTTP"/>
+        <logger message="#[message.inboundProperties.'http.uri.params'.id]" level="INFO" doc:name="Logger"/>
+        <set-variable variableName="id" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Set id"/>
+        <choice doc:name="Choice">
+            <when expression="#[message.inboundProperties.'http.method' == 'GET']">
+                <http:request config-ref="NodeAPI" path="/inbox/{id}" method="GET" doc:name="Get Emails">
+                    <http:request-builder>
+                        <http:uri-param paramName="id" value="#[flowVars.id]"/>
+                    </http:request-builder>
+                </http:request>
+                <dw:transform-message doc:name="Transform Message" metadata:id="4d936f52-47fe-43c9-a056-8a1ec5af7b4a">
+                    <dw:input-payload mimeType="application/json"/>
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map ((item) -> {
+	ID: item.id,
+	To: item.recipient,
+	From: item.origin,
+	Subject: item.subject,
+	Message: item.content,
+	STATUS: item.STATUS,
+	DELETED: item.DELETED
+})]]></dw:set-payload>
+                </dw:transform-message>
+            </when>
+            <when expression="#[message.inboundProperties.'http.method' == 'PUT']">
+                <http:request config-ref="NodeAPI" path="/inbox/update/{id}" method="PUT" doc:name="Update Status">
+                    <http:request-builder>
+                        <http:uri-param paramName="id" value="#[flowVars.id]"/>
+                    </http:request-builder>
+                </http:request>
+                <dw:transform-message doc:name="Transform Message" metadata:id="aee17f2b-d401-4394-b250-c905f68e0527">
+                    <dw:input-payload doc:sample="examples\accountCreationExample.json" mimeType="application/json"/>
+                    <dw:set-variable variableName="status"><![CDATA[%dw 1.0
+%output application/json
+---
+payload.affectedRows]]></dw:set-variable>
+
+                </dw:transform-message>
+                <logger message="#[flowVars.status]" level="INFO" doc:name="Logger"/>
+                <choice doc:name="Choice">
+                    <when expression="#[flowVars.status == 1]">
+                        <dw:transform-message doc:name="Transform Message">
+                            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+"Status updated"]]></dw:set-payload>
+                        </dw:transform-message>
+                    </when>
+                    <otherwise>
+                        <dw:transform-message doc:name="Transform Message">
+                            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+"Status not updated"]]></dw:set-payload>
+                        </dw:transform-message>
+                    </otherwise>
+                </choice>
+            </when>
+            <otherwise>
+                <dw:transform-message doc:name="Transform Message">
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+"Error."]]></dw:set-payload>
+                </dw:transform-message>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="testFlow">
         <http:listener config-ref="muleAPI" path="/test" allowedMethods="POST,GET" doc:name="HTTP"/>
         <dw:transform-message doc:name="Transform Message">
             <dw:set-payload><![CDATA[%dw 1.0
@@ -233,7 +282,6 @@ payload.password as :string
 	"payload": payload
 }]]></dw:set-payload>
         </dw:transform-message>
-	</flow>
-
+    </flow>
 
 </mule>

@@ -14,7 +14,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
     <munit:test name="CreateAccount-test" description="Successfully create account" expectException="	" ignore="true">
         <set-payload value="{&quot;username&quot;:&quot;newUser&quot;, &quot;password&quot;:&quot;password&quot;}" doc:name="Set Payload"/>
         <http:request config-ref="NodeAPI" path="/createAccount" method="POST" doc:name="HTTP"/>
-        <flow-ref name="emailFlow" doc:name="emailFlow"/>
+        <flow-ref name="EmailProjectFlow" doc:name="emailFlow"/>
         <munit:assert-on-equals expectedValue="#[]" actualValue="#[]" doc:name="Assert Equals"/>
     </munit:test>
     <munit:test name="email-test-suiteTest" description="MUnit Test">
@@ -26,7 +26,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
     <munit:test name="loginFlowTest" description="Succuessful Login" ignore="true">
         <set-payload value="{&quot;username&quot;:&quot;test&quot;, &quot;password&quot;:&quot;password&quot;}" mimeType="application/json" doc:name="Set Payload"/>
         <http:request config-ref="NodeAPI" path="/login" method="POST" doc:name="HTTP"/>
-        <flow-ref name="emailFlow" doc:name="emailFlow"/>
+        <flow-ref name="EmailProjectFlow" doc:name="emailFlow"/>
         <dw:transform-message doc:name="Transform Message" metadata:id="93016ac5-3896-4a2b-8824-ba6b33aa74cd">
             <dw:input-payload doc:sample="sample_data\json.json"/>
             <dw:set-payload><![CDATA[%dw 1.0

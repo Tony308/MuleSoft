@@ -49,7 +49,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
  </cors:config>
     <context:property-placeholder location="email-${env}.properties"/>
     <db:mysql-config name="MySQL_Configuration" host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" doc:name="MySQL Configuration"/>
-    <http:request-config name="FrontAPI" host="localhost" port="1234" doc:name="HTTP Request Configuration"/>
+
 
     <catch-exception-strategy name="globalCatch_Exception_Strategy">
         <dw:transform-message doc:name="Transform Message">
