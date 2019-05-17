@@ -1,0 +1,6 @@
+{
+	"recipient":"to",
+	"origin": "from",
+	"subject":"json",
+	"content": "Message here."
+}
